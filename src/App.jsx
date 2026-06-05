@@ -24,7 +24,7 @@ function App() {
 
   useEffect(() => {
     if (!token) return;
-    fetch("http://localhost:8080/api/exercises", {
+    fetch(``${import.meta.env.VITE_API_URL}/api/exercises`, {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then((res) => res.json())
