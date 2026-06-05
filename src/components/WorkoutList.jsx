@@ -23,22 +23,25 @@ function WorkoutList({ token, onLogout }) {
   };
 
   useEffect(() => {
-    fetch("http://localhost:8080/api/workouts", { headers })
+    fetch(`${import.meta.env.VITE_API_URL}/api/workouts`, { headers })
       .then((res) => res.json())
       .then((data) => setWorkouts(data));
   }, []);
 
   useEffect(() => {
-    fetch("http://localhost:8080/api/exercises", { headers })
+    fetch(`${import.meta.env.VITE_API_URL}/api/exercises`, { headers })
       .then((res) => res.json())
       .then((data) => setAllExercises(data));
   }, []);
 
   function handleWorkoutClick(workout) {
     setSelectedWorkout(workout);
-    fetch(`http://localhost:8080/api/workouts/${workout.id}/exercises`, {
-      headers,
-    })
+    fetch(
+      `${import.meta.env.VITE_API_URL}/api/workouts/${workout.id}/exercises`,
+      {
+        headers,
+      },
+    )
       .then((res) => res.json())
       .then((data) => {
         setExercises(data);
@@ -48,7 +51,7 @@ function WorkoutList({ token, onLogout }) {
 
   function handleCreateWorkout(e) {
     e.preventDefault();
-    fetch("http://localhost:8080/api/workouts", {
+    fetch(`${import.meta.env.VITE_API_URL}/api/workouts`, {
       method: "POST",
       headers,
       body: JSON.stringify(newWorkout),
@@ -68,7 +71,7 @@ function WorkoutList({ token, onLogout }) {
   function handleAddExercise(e) {
     e.preventDefault();
     fetch(
-      `http://localhost:8080/api/workouts/${selectedWorkout.id}/exercises/${newExercise.exerciseId}`,
+      `${import.meta.env.VITE_API_URL}/api/workouts/${selectedWorkout.id}/exercises/${newExercise.exerciseId}`,
       {
         method: "POST",
         headers,
@@ -92,10 +95,13 @@ function WorkoutList({ token, onLogout }) {
   }
 
   function confirmDeleteWorkout() {
-    fetch(`http://localhost:8080/api/workouts/${workoutToDelete.id}`, {
-      method: "DELETE",
-      headers,
-    }).then(() => {
+    fetch(
+      `${import.meta.env.VITE_API_URL}/api/workouts/${workoutToDelete.id}`,
+      {
+        method: "DELETE",
+        headers,
+      },
+    ).then(() => {
       setWorkouts(workouts.filter((w) => w.id !== workoutToDelete.id));
       if (selectedWorkout?.id === workoutToDelete.id) {
         setSelectedWorkout(null);
@@ -111,10 +117,13 @@ function WorkoutList({ token, onLogout }) {
   }
 
   function confirmDeleteExercise() {
-    fetch(`http://localhost:8080/api/workouts/exercises/${exerciseToDelete}`, {
-      method: "DELETE",
-      headers,
-    }).then(() => {
+    fetch(
+      `${import.meta.env.VITE_API_URL}/api/workouts/exercises/${exerciseToDelete}`,
+      {
+        method: "DELETE",
+        headers,
+      },
+    ).then(() => {
       setExercises(exercises.filter((e) => e.id !== exerciseToDelete));
       setExerciseToDelete(null);
     });

@@ -15,7 +15,7 @@ function Settings({ token, onLogout }) {
   };
 
   useEffect(() => {
-    fetch("http://localhost:8080/api/exercises", { headers })
+    fetch(`${import.meta.env.VITE_API_URL}/api/exercises`, { headers })
       .then((res) => res.json())
       .then((data) => setExercises(data));
 
@@ -25,7 +25,7 @@ function Settings({ token, onLogout }) {
 
   function handleAddExercise() {
     if (!newExerciseName.trim()) return;
-    fetch("http://localhost:8080/api/exercises", {
+    fetch(`${import.meta.env.VITE_API_URL}/api/exercises`, {
       method: "POST",
       headers,
       body: JSON.stringify({ name: newExerciseName }),
@@ -40,7 +40,7 @@ function Settings({ token, onLogout }) {
   }
 
   function handleDeleteExercise(id) {
-    fetch(`http://localhost:8080/api/exercises/${id}`, {
+    fetch(`${import.meta.env.VITE_API_URL}/api/exercises/${id}`, {
       method: "DELETE",
       headers,
     }).then(() => {

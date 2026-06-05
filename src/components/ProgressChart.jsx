@@ -16,7 +16,7 @@ function ProgressChart({ allExercises, token }) {
   useEffect(() => {
     if (!selectedExerciseId) return;
     fetch(
-      `http://localhost:8080/api/workouts/exercises/${selectedExerciseId}/progress`,
+      `${import.meta.env.VITE_API_URL}/api/workouts/exercises/${selectedExerciseId}/progress`,
       {
         headers: { Authorization: `Bearer ${token}` },
       },
