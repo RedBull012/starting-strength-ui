@@ -6,9 +6,29 @@ import Login from "./components/Login";
 import Navbar from "./components/Navbar";
 import Settings from "./components/Settings";
 
+function isTokenExpired(token) {
+  try {
+    const payload = JSON.parse(atob(token.split(".")[1]));
+    return payload.exp * 1000 < Date.now();
+  } catch {
+    return true;
+  }
+}
+
 function App() {
-  const [token, setToken] = useState(localStorage.getItem("token") || null);
+  const storedToken = localStorage.getItem("token");
+  const validToken = storedToken && !isTokenExpired(storedToken) ? storedToken : null;
+
+  const [token, setToken] = useState(validToken);
   const [allExercises, setAllExercises] = useState([]);
+
+  // Clear expired token on load
+  useEffect(() => {
+    if (!validToken && storedToken) {
+      localStorage.removeItem("token");
+      localStorage.removeItem("username");
+    }
+  }, []);
 
   function handleLogin(token, username) {
     localStorage.setItem("token", token);
@@ -22,13 +42,30 @@ function App() {
     setToken(null);
   }
 
+  // Central fetch wrapper — auto logout on 401
+  function authFetch(url, options = {}) {
+    return fetch(url, {
+      ...options,
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+        ...options.headers,
+      },
+    }).then((res) => {
+      if (res.status === 401) {
+        handleLogout();
+        return Promise.reject(new Error("Session expired"));
+      }
+      return res;
+    });
+  }
+
   useEffect(() => {
     if (!token) return;
-    fetch(`${import.meta.env.VITE_API_URL}/api/exercises`, {
-      headers: { Authorization: `Bearer ${token}` },
-    })
+    authFetch(`${import.meta.env.VITE_API_URL}/api/exercises`)
       .then((res) => res.json())
-      .then((data) => setAllExercises(data));
+      .then((data) => setAllExercises(data))
+      .catch(() => {});
   }, [token]);
 
   if (!token) {
@@ -40,15 +77,15 @@ function App() {
       <Routes>
         <Route
           path="/"
-          element={<WorkoutList token={token} onLogout={handleLogout} />}
+          element={<WorkoutList token={token} onLogout={handleLogout} authFetch={authFetch} />}
         />
         <Route
           path="/progress"
-          element={<ProgressChart allExercises={allExercises} token={token} />}
+          element={<ProgressChart allExercises={allExercises} token={token} authFetch={authFetch} />}
         />
         <Route
           path="/settings"
-          element={<Settings token={token} onLogout={handleLogout} />}
+          element={<Settings token={token} onLogout={handleLogout} authFetch={authFetch} />}
         />
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>

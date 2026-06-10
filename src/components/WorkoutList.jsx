@@ -23,7 +23,7 @@ const MONTH_NAMES = [
 ];
 const DOW = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
 
-function WorkoutList({ token, onLogout }) {
+function WorkoutList({ token, onLogout, authFetch }) {
   const [workouts, setWorkouts] = useState([]);
   const [selectedWorkout, setSelectedWorkout] = useState(null);
   const [exercises, setExercises] = useState([]);
@@ -38,21 +38,18 @@ function WorkoutList({ token, onLogout }) {
   const [calYear, setCalYear] = useState(today.getFullYear());
   const [calMonth, setCalMonth] = useState(today.getMonth());
 
-  const headers = {
-    "Content-Type": "application/json",
-    Authorization: `Bearer ${token}`,
-  };
-
   useEffect(() => {
-    fetch(`${import.meta.env.VITE_API_URL}/api/workouts`, { headers })
+    authFetch(`${import.meta.env.VITE_API_URL}/api/workouts`)
       .then((res) => res.json())
-      .then((data) => setWorkouts(data));
+      .then((data) => setWorkouts(data))
+      .catch(() => {});
   }, []);
 
   useEffect(() => {
-    fetch(`${import.meta.env.VITE_API_URL}/api/exercises`, { headers })
+    authFetch(`${import.meta.env.VITE_API_URL}/api/exercises`)
       .then((res) => res.json())
-      .then((data) => setAllExercises(data));
+      .then((data) => setAllExercises(data))
+      .catch(() => {});
   }, []);
 
   // Map "YYYY-MM-DD" -> workout for quick dot lookup
@@ -71,9 +68,10 @@ function WorkoutList({ token, onLogout }) {
     const workout = workoutByDate[dateStr];
     if (workout) {
       setSelectedWorkout(workout);
-      fetch(`${import.meta.env.VITE_API_URL}/api/workouts/${workout.id}/exercises`, { headers })
+      authFetch(`${import.meta.env.VITE_API_URL}/api/workouts/${workout.id}/exercises`)
         .then((res) => res.json())
-        .then((data) => setExercises(data));
+        .then((data) => setExercises(data))
+        .catch(() => {});
     } else {
       setSelectedWorkout(null);
       setExercises([]);
@@ -95,9 +93,8 @@ function WorkoutList({ token, onLogout }) {
 
   function handleCreateWorkout(e) {
     e.preventDefault();
-    fetch(`${import.meta.env.VITE_API_URL}/api/workouts`, {
+    authFetch(`${import.meta.env.VITE_API_URL}/api/workouts`, {
       method: "POST",
-      headers,
       body: JSON.stringify(newWorkout),
     })
       .then((res) => res.json())
@@ -107,16 +104,16 @@ function WorkoutList({ token, onLogout }) {
         setShowNewWorkout(false);
         setSelectedWorkout(created);
         setExercises([]);
-      });
+      })
+      .catch(() => {});
   }
 
   function handleAddExercise(e) {
     e.preventDefault();
-    fetch(
+    authFetch(
       `${import.meta.env.VITE_API_URL}/api/workouts/${selectedWorkout.id}/exercises/${newExercise.exerciseId}`,
       {
         method: "POST",
-        headers,
         body: JSON.stringify({
           sets: parseInt(newExercise.sets),
           reps: parseInt(newExercise.reps),
@@ -128,13 +125,13 @@ function WorkoutList({ token, onLogout }) {
       .then((created) => {
         setExercises([...exercises, created]);
         setNewExercise({ exerciseId: "", sets: "", reps: "", weight: "" });
-      });
+      })
+      .catch(() => {});
   }
 
   function confirmDeleteWorkout() {
-    fetch(`${import.meta.env.VITE_API_URL}/api/workouts/${workoutToDelete.id}`, {
+    authFetch(`${import.meta.env.VITE_API_URL}/api/workouts/${workoutToDelete.id}`, {
       method: "DELETE",
-      headers,
     }).then(() => {
       setWorkouts(workouts.filter((w) => w.id !== workoutToDelete.id));
       if (selectedWorkout?.id === workoutToDelete.id) {
@@ -142,17 +139,16 @@ function WorkoutList({ token, onLogout }) {
         setExercises([]);
       }
       setWorkoutToDelete(null);
-    });
+    }).catch(() => {});
   }
 
   function confirmDeleteExercise() {
-    fetch(`${import.meta.env.VITE_API_URL}/api/workouts/exercises/${exerciseToDelete}`, {
+    authFetch(`${import.meta.env.VITE_API_URL}/api/workouts/exercises/${exerciseToDelete}`, {
       method: "DELETE",
-      headers,
     }).then(() => {
       setExercises(exercises.filter((e) => e.id !== exerciseToDelete));
       setExerciseToDelete(null);
-    });
+    }).catch(() => {});
   }
 
   const cells = buildCalendar(calYear, calMonth);

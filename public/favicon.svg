@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- Dark background circle -->
+  <circle cx="32" cy="32" r="32" fill="#18181b"/>
+
+  <!-- Barbell bar (horizontal center rod) -->
+  <rect x="10" y="30" width="44" height="4" rx="2" fill="#f97316"/>
+
+  <!-- Left outer plate -->
+  <rect x="10" y="22" width="6" height="20" rx="2" fill="#f97316"/>
+  <!-- Left inner plate -->
+  <rect x="18" y="25" width="4" height="14" rx="1.5" fill="#f97316"/>
+
+  <!-- Right inner plate -->
+  <rect x="42" y="25" width="4" height="14" rx="1.5" fill="#f97316"/>
+  <!-- Right outer plate -->
+  <rect x="48" y="22" width="6" height="20" rx="2" fill="#f97316"/>
+</svg>
