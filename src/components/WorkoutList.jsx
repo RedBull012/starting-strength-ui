@@ -43,6 +43,10 @@ function WorkoutList({ token, onLogout, authFetch }) {
     reps: "5",
     weight: "",
   });
+  const [lastSession, setLastSession] = useState(null);
+  const [templates, setTemplates] = useState([]);
+  const [showTemplateMenu, setShowTemplateMenu] = useState(false);
+  const [editingExercise, setEditingExercise] = useState(null); // { id, sets, reps, weight }
   const [showNewWorkout, setShowNewWorkout] = useState(false);
   const [workoutToDelete, setWorkoutToDelete] = useState(null);
   const [exerciseToDelete, setExerciseToDelete] = useState(null);
@@ -62,6 +66,13 @@ function WorkoutList({ token, onLogout, authFetch }) {
     authFetch(`${import.meta.env.VITE_API_URL}/api/exercises`)
       .then((res) => res.json())
       .then((data) => setAllExercises(data))
+      .catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    authFetch(`${import.meta.env.VITE_API_URL}/api/templates`)
+      .then((res) => res.json())
+      .then((data) => setTemplates(data))
       .catch(() => {});
   }, []);
 
@@ -143,7 +154,8 @@ function WorkoutList({ token, onLogout, authFetch }) {
       .then((res) => res.json())
       .then((created) => {
         setExercises([...exercises, created]);
-        setNewExercise({ exerciseId: "", sets: "", reps: "", weight: "" });
+        setNewExercise({ exerciseId: "", sets: "3", reps: "5", weight: "" });
+        setLastSession(null);
       })
       .catch(() => {});
   }
@@ -162,6 +174,39 @@ function WorkoutList({ token, onLogout, authFetch }) {
           setExercises([]);
         }
         setWorkoutToDelete(null);
+      })
+      .catch(() => {});
+  }
+
+  function handleApplyTemplate(templateId) {
+    authFetch(
+      `${import.meta.env.VITE_API_URL}/api/templates/${templateId}/apply/${selectedWorkout.id}`,
+      { method: "POST" }
+    )
+      .then((res) => res.json())
+      .then((created) => {
+        setExercises([...exercises, ...created]);
+        setShowTemplateMenu(false);
+      })
+      .catch(() => {});
+  }
+
+  function handleSaveEdit() {
+    authFetch(
+      `${import.meta.env.VITE_API_URL}/api/workouts/exercises/${editingExercise.id}`,
+      {
+        method: "PUT",
+        body: JSON.stringify({
+          sets: parseInt(editingExercise.sets),
+          reps: parseInt(editingExercise.reps),
+          weight: parseFloat(editingExercise.weight),
+        }),
+      }
+    )
+      .then((res) => res.json())
+      .then((updated) => {
+        setExercises(exercises.map((e) => (e.id === updated.id ? updated : e)));
+        setEditingExercise(null);
       })
       .catch(() => {});
   }
@@ -330,12 +375,37 @@ function WorkoutList({ token, onLogout, authFetch }) {
                     {selectedWorkout.date}
                   </p>
                 </div>
-                <button
-                  onClick={() => setWorkoutToDelete(selectedWorkout)}
-                  className="text-zinc-600 hover:text-red-400 text-xs transition-colors mt-1"
-                >
-                  Delete workout
-                </button>
+                <div className="flex flex-col items-end gap-2 mt-1">
+                  {templates.length > 0 && (
+                    <div className="relative">
+                      <button
+                        onClick={() => setShowTemplateMenu(!showTemplateMenu)}
+                        className="text-orange-400 hover:text-orange-300 text-xs font-medium transition-colors"
+                      >
+                        Apply template
+                      </button>
+                      {showTemplateMenu && (
+                        <div className="absolute right-0 top-6 bg-zinc-800 border border-zinc-700 rounded-lg shadow-lg z-10 min-w-40">
+                          {templates.map((t) => (
+                            <button
+                              key={t.id}
+                              onClick={() => handleApplyTemplate(t.id)}
+                              className="w-full text-left px-4 py-2 text-sm hover:bg-zinc-700 first:rounded-t-lg last:rounded-b-lg transition-colors"
+                            >
+                              {t.name}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                  <button
+                    onClick={() => setWorkoutToDelete(selectedWorkout)}
+                    className="text-zinc-600 hover:text-red-400 text-xs transition-colors"
+                  >
+                    Delete workout
+                  </button>
+                </div>
               </div>
 
               <div className="flex flex-col gap-3 mb-8">
@@ -344,26 +414,85 @@ function WorkoutList({ token, onLogout, authFetch }) {
                     No exercises logged yet.
                   </p>
                 ) : (
-                  exercises.map((exercise) => (
-                    <div
-                      key={exercise.id}
-                      className="bg-zinc-900 border border-zinc-800 rounded-xl px-5 py-4 flex items-center justify-between"
-                    >
-                      <p className="font-semibold">{exercise.exerciseName}</p>
-                      <div className="flex items-center gap-4">
-                        <p className="text-zinc-400 text-sm">
-                          {exercise.sets} × {exercise.reps} @ {exercise.weight}{" "}
-                          lbs
-                        </p>
-                        <button
-                          onClick={() => setExerciseToDelete(exercise.id)}
-                          className="text-zinc-500 hover:text-red-400 text-xs transition-colors p-1"
-                        >
-                          ✕
-                        </button>
+                  exercises.map((exercise) =>
+                    editingExercise?.id === exercise.id ? (
+                      <div
+                        key={exercise.id}
+                        className="bg-zinc-900 border border-orange-500 rounded-xl px-5 py-4"
+                      >
+                        <p className="font-semibold mb-3">{exercise.exerciseName}</p>
+                        <div className="flex gap-2 mb-3">
+                          <input
+                            type="number"
+                            value={editingExercise.sets}
+                            onChange={(e) => setEditingExercise({ ...editingExercise, sets: e.target.value })}
+                            placeholder="Sets"
+                            className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-orange-500"
+                          />
+                          <input
+                            type="number"
+                            value={editingExercise.reps}
+                            onChange={(e) => setEditingExercise({ ...editingExercise, reps: e.target.value })}
+                            placeholder="Reps"
+                            className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-orange-500"
+                          />
+                          <input
+                            type="number"
+                            value={editingExercise.weight}
+                            onChange={(e) => setEditingExercise({ ...editingExercise, weight: e.target.value })}
+                            placeholder="Weight"
+                            className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-orange-500"
+                            autoFocus
+                          />
+                        </div>
+                        <div className="flex gap-2">
+                          <button
+                            onClick={handleSaveEdit}
+                            className="flex-1 bg-orange-500 hover:bg-orange-600 text-white text-sm font-medium py-2 rounded-lg transition-colors"
+                          >
+                            Save
+                          </button>
+                          <button
+                            onClick={() => setEditingExercise(null)}
+                            className="flex-1 bg-zinc-800 hover:bg-zinc-700 text-white text-sm font-medium py-2 rounded-lg transition-colors"
+                          >
+                            Cancel
+                          </button>
+                        </div>
                       </div>
-                    </div>
-                  ))
+                    ) : (
+                      <div
+                        key={exercise.id}
+                        className="bg-zinc-900 border border-zinc-800 rounded-xl px-5 py-4 flex items-center justify-between"
+                      >
+                        <p className="font-semibold">{exercise.exerciseName}</p>
+                        <div className="flex items-center gap-3">
+                          <div className="text-right">
+                            <p className="text-zinc-400 text-sm">
+                              {exercise.sets} × {exercise.reps}{exercise.weight != null ? ` @ ${exercise.weight} lbs` : " — tap to add weight"}
+                            </p>
+                            {exercise.weight != null && (
+                              <p className="text-xs text-zinc-600">
+                                est. 1RM: {Math.round(exercise.weight * (1 + exercise.reps / 30))} lbs
+                              </p>
+                            )}
+                          </div>
+                          <button
+                            onClick={() => setEditingExercise({ id: exercise.id, sets: exercise.sets, reps: exercise.reps, weight: exercise.weight ?? "" })}
+                            className="text-zinc-500 hover:text-orange-400 text-xs transition-colors p-1"
+                          >
+                            ✎
+                          </button>
+                          <button
+                            onClick={() => setExerciseToDelete(exercise.id)}
+                            className="text-zinc-500 hover:text-red-400 text-xs transition-colors p-1"
+                          >
+                            ✕
+                          </button>
+                        </div>
+                      </div>
+                    )
+                  )
                 )}
               </div>
 
@@ -374,12 +503,17 @@ function WorkoutList({ token, onLogout, authFetch }) {
                 <div className="flex flex-col gap-3">
                   <select
                     value={newExercise.exerciseId}
-                    onChange={(e) =>
-                      setNewExercise({
-                        ...newExercise,
-                        exerciseId: e.target.value,
-                      })
-                    }
+                    onChange={(e) => {
+                      const id = e.target.value;
+                      setNewExercise({ ...newExercise, exerciseId: id });
+                      setLastSession(null);
+                      if (id) {
+                        authFetch(`${import.meta.env.VITE_API_URL}/api/workouts/exercises/${id}/last`)
+                          .then((res) => res.status === 204 ? null : res.json())
+                          .then((data) => setLastSession(data))
+                          .catch(() => {});
+                      }
+                    }}
                     className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-orange-500"
                   >
                     <option value="">Select exercise</option>
@@ -389,6 +523,11 @@ function WorkoutList({ token, onLogout, authFetch }) {
                       </option>
                     ))}
                   </select>
+                  {lastSession && (
+                    <p className="text-xs text-zinc-500">
+                      Last session ({lastSession.date}): {lastSession.sets} × {lastSession.reps} @ {lastSession.weight} lbs
+                    </p>
+                  )}
                   <div className="flex gap-3">
                     <input
                       type="number"
