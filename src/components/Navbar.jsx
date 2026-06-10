@@ -55,6 +55,34 @@ function Navbar() {
       </NavLink>
 
       <NavLink
+        to="/metrics"
+        className={({ isActive }) =>
+          `flex-1 flex flex-col items-center py-3 text-xs font-medium transition-colors ${
+            isActive ? "text-orange-500" : "text-zinc-500 hover:text-zinc-300"
+          }`
+        }
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          className="w-5 h-5 mb-1"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M3 6h18M3 12h18M3 18h18"
+          />
+          <circle cx="7" cy="6" r="1.5" fill="currentColor" />
+          <circle cx="12" cy="12" r="1.5" fill="currentColor" />
+          <circle cx="17" cy="18" r="1.5" fill="currentColor" />
+        </svg>
+        Metrics
+      </NavLink>
+
+      <NavLink
         to="/settings"
         className={({ isActive }) =>
           `flex-1 flex flex-col items-center py-3 text-xs font-medium transition-colors ${

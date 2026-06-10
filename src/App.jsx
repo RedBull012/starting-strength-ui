@@ -5,6 +5,7 @@ import ProgressChart from "./components/ProgressChart";
 import Login from "./components/Login";
 import Navbar from "./components/Navbar";
 import Settings from "./components/Settings";
+import BodyMetrics from "./components/BodyMetrics";
 
 function isTokenExpired(token) {
   try {
@@ -82,6 +83,10 @@ function App() {
         <Route
           path="/progress"
           element={<ProgressChart allExercises={allExercises} token={token} authFetch={authFetch} />}
+        />
+        <Route
+          path="/metrics"
+          element={<BodyMetrics authFetch={authFetch} />}
         />
         <Route
           path="/settings"

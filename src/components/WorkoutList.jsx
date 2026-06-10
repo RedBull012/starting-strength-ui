@@ -8,20 +8,28 @@ function buildCalendar(year, month) {
 
   for (let i = firstDay - 1; i >= 0; i--)
     cells.push({ day: daysInPrev - i, current: false });
-  for (let d = 1; d <= daysInMonth; d++)
-    cells.push({ day: d, current: true });
+  for (let d = 1; d <= daysInMonth; d++) cells.push({ day: d, current: true });
   const remaining = 42 - cells.length;
-  for (let d = 1; d <= remaining; d++)
-    cells.push({ day: d, current: false });
+  for (let d = 1; d <= remaining; d++) cells.push({ day: d, current: false });
 
   return cells;
 }
 
 const MONTH_NAMES = [
-  "January","February","March","April","May","June",
-  "July","August","September","October","November","December",
+  "January",
+  "February",
+  "March",
+  "April",
+  "May",
+  "June",
+  "July",
+  "August",
+  "September",
+  "October",
+  "November",
+  "December",
 ];
-const DOW = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+const DOW = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
 function WorkoutList({ token, onLogout, authFetch }) {
   const [workouts, setWorkouts] = useState([]);
@@ -29,7 +37,12 @@ function WorkoutList({ token, onLogout, authFetch }) {
   const [exercises, setExercises] = useState([]);
   const [allExercises, setAllExercises] = useState([]);
   const [newWorkout, setNewWorkout] = useState({ name: "", date: "" });
-  const [newExercise, setNewExercise] = useState({ exerciseId: "", sets: "", reps: "", weight: "" });
+  const [newExercise, setNewExercise] = useState({
+    exerciseId: "",
+    sets: "3",
+    reps: "5",
+    weight: "",
+  });
   const [showNewWorkout, setShowNewWorkout] = useState(false);
   const [workoutToDelete, setWorkoutToDelete] = useState(null);
   const [exerciseToDelete, setExerciseToDelete] = useState(null);
@@ -68,7 +81,9 @@ function WorkoutList({ token, onLogout, authFetch }) {
     const workout = workoutByDate[dateStr];
     if (workout) {
       setSelectedWorkout(workout);
-      authFetch(`${import.meta.env.VITE_API_URL}/api/workouts/${workout.id}/exercises`)
+      authFetch(
+        `${import.meta.env.VITE_API_URL}/api/workouts/${workout.id}/exercises`,
+      )
         .then((res) => res.json())
         .then((data) => setExercises(data))
         .catch(() => {});
@@ -82,13 +97,17 @@ function WorkoutList({ token, onLogout, authFetch }) {
   }
 
   function prevMonth() {
-    if (calMonth === 0) { setCalYear(calYear - 1); setCalMonth(11); }
-    else setCalMonth(calMonth - 1);
+    if (calMonth === 0) {
+      setCalYear(calYear - 1);
+      setCalMonth(11);
+    } else setCalMonth(calMonth - 1);
   }
 
   function nextMonth() {
-    if (calMonth === 11) { setCalYear(calYear + 1); setCalMonth(0); }
-    else setCalMonth(calMonth + 1);
+    if (calMonth === 11) {
+      setCalYear(calYear + 1);
+      setCalMonth(0);
+    } else setCalMonth(calMonth + 1);
   }
 
   function handleCreateWorkout(e) {
@@ -130,29 +149,43 @@ function WorkoutList({ token, onLogout, authFetch }) {
   }
 
   function confirmDeleteWorkout() {
-    authFetch(`${import.meta.env.VITE_API_URL}/api/workouts/${workoutToDelete.id}`, {
-      method: "DELETE",
-    }).then(() => {
-      setWorkouts(workouts.filter((w) => w.id !== workoutToDelete.id));
-      if (selectedWorkout?.id === workoutToDelete.id) {
-        setSelectedWorkout(null);
-        setExercises([]);
-      }
-      setWorkoutToDelete(null);
-    }).catch(() => {});
+    authFetch(
+      `${import.meta.env.VITE_API_URL}/api/workouts/${workoutToDelete.id}`,
+      {
+        method: "DELETE",
+      },
+    )
+      .then(() => {
+        setWorkouts(workouts.filter((w) => w.id !== workoutToDelete.id));
+        if (selectedWorkout?.id === workoutToDelete.id) {
+          setSelectedWorkout(null);
+          setExercises([]);
+        }
+        setWorkoutToDelete(null);
+      })
+      .catch(() => {});
   }
 
   function confirmDeleteExercise() {
-    authFetch(`${import.meta.env.VITE_API_URL}/api/workouts/exercises/${exerciseToDelete}`, {
-      method: "DELETE",
-    }).then(() => {
-      setExercises(exercises.filter((e) => e.id !== exerciseToDelete));
-      setExerciseToDelete(null);
-    }).catch(() => {});
+    authFetch(
+      `${import.meta.env.VITE_API_URL}/api/workouts/exercises/${exerciseToDelete}`,
+      {
+        method: "DELETE",
+      },
+    )
+      .then(() => {
+        setExercises(exercises.filter((e) => e.id !== exerciseToDelete));
+        setExerciseToDelete(null);
+      })
+      .catch(() => {});
   }
 
   const cells = buildCalendar(calYear, calMonth);
-  const todayStr = isoDate(today.getFullYear(), today.getMonth(), today.getDate());
+  const todayStr = isoDate(
+    today.getFullYear(),
+    today.getMonth(),
+    today.getDate(),
+  );
 
   return (
     <div className="min-h-screen bg-zinc-950 text-white">
@@ -168,7 +201,6 @@ function WorkoutList({ token, onLogout, authFetch }) {
       </div>
 
       <div className="max-w-4xl mx-auto px-4 py-6 flex flex-col md:flex-row md:gap-8">
-
         {/* ── Calendar ── */}
         <div className="md:w-80 md:shrink-0">
           {/* Month navigation */}
@@ -195,7 +227,10 @@ function WorkoutList({ token, onLogout, authFetch }) {
           {/* Day-of-week headers */}
           <div className="grid grid-cols-7 mb-1">
             {DOW.map((d) => (
-              <div key={d} className="text-center text-xs font-semibold text-zinc-600 uppercase tracking-wide py-1">
+              <div
+                key={d}
+                className="text-center text-xs font-semibold text-zinc-600 uppercase tracking-wide py-1"
+              >
                 {d}
               </div>
             ))}
@@ -204,7 +239,9 @@ function WorkoutList({ token, onLogout, authFetch }) {
           {/* Calendar grid */}
           <div className="grid grid-cols-7 gap-y-1">
             {cells.map((cell, i) => {
-              const dateStr = cell.current ? isoDate(calYear, calMonth, cell.day) : null;
+              const dateStr = cell.current
+                ? isoDate(calYear, calMonth, cell.day)
+                : null;
               const hasWorkout = dateStr && workoutByDate[dateStr];
               const isSelected = dateStr && selectedWorkout?.date === dateStr;
               const isToday = dateStr === todayStr;
@@ -217,14 +254,20 @@ function WorkoutList({ token, onLogout, authFetch }) {
                   className={[
                     "relative flex flex-col items-center justify-center aspect-square rounded-lg text-sm font-medium transition-colors",
                     !cell.current && "text-zinc-700 cursor-default",
-                    cell.current && !isSelected && "text-zinc-300 hover:bg-zinc-800",
+                    cell.current &&
+                      !isSelected &&
+                      "text-zinc-300 hover:bg-zinc-800",
                     isToday && !isSelected && "ring-1 ring-zinc-600",
                     isSelected && "bg-orange-500 text-white",
-                  ].filter(Boolean).join(" ")}
+                  ]
+                    .filter(Boolean)
+                    .join(" ")}
                 >
                   {cell.day}
                   {hasWorkout && (
-                    <span className={`absolute bottom-1 w-1 h-1 rounded-full ${isSelected ? "bg-white" : "bg-orange-500"}`} />
+                    <span
+                      className={`absolute bottom-1 w-1 h-1 rounded-full ${isSelected ? "bg-white" : "bg-orange-500"}`}
+                    />
                   )}
                 </button>
               );
@@ -255,14 +298,18 @@ function WorkoutList({ token, onLogout, authFetch }) {
                 type="text"
                 placeholder="Workout name"
                 value={newWorkout.name}
-                onChange={(e) => setNewWorkout({ ...newWorkout, name: e.target.value })}
+                onChange={(e) =>
+                  setNewWorkout({ ...newWorkout, name: e.target.value })
+                }
                 onKeyDown={(e) => e.key === "Enter" && handleCreateWorkout(e)}
                 className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm mb-2 focus:outline-none focus:border-orange-500"
               />
               <input
                 type="date"
                 value={newWorkout.date}
-                onChange={(e) => setNewWorkout({ ...newWorkout, date: e.target.value })}
+                onChange={(e) =>
+                  setNewWorkout({ ...newWorkout, date: e.target.value })
+                }
                 className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm mb-3 focus:outline-none focus:border-orange-500"
               />
               <button
@@ -279,7 +326,9 @@ function WorkoutList({ token, onLogout, authFetch }) {
               <div className="flex items-start justify-between mb-6">
                 <div>
                   <h2 className="text-2xl font-bold">{selectedWorkout.name}</h2>
-                  <p className="text-zinc-500 text-sm mt-1">{selectedWorkout.date}</p>
+                  <p className="text-zinc-500 text-sm mt-1">
+                    {selectedWorkout.date}
+                  </p>
                 </div>
                 <button
                   onClick={() => setWorkoutToDelete(selectedWorkout)}
@@ -291,7 +340,9 @@ function WorkoutList({ token, onLogout, authFetch }) {
 
               <div className="flex flex-col gap-3 mb-8">
                 {exercises.length === 0 ? (
-                  <p className="text-zinc-600 text-sm">No exercises logged yet.</p>
+                  <p className="text-zinc-600 text-sm">
+                    No exercises logged yet.
+                  </p>
                 ) : (
                   exercises.map((exercise) => (
                     <div
@@ -301,7 +352,8 @@ function WorkoutList({ token, onLogout, authFetch }) {
                       <p className="font-semibold">{exercise.exerciseName}</p>
                       <div className="flex items-center gap-4">
                         <p className="text-zinc-400 text-sm">
-                          {exercise.sets} × {exercise.reps} @ {exercise.weight} lbs
+                          {exercise.sets} × {exercise.reps} @ {exercise.weight}{" "}
+                          lbs
                         </p>
                         <button
                           onClick={() => setExerciseToDelete(exercise.id)}
@@ -322,12 +374,19 @@ function WorkoutList({ token, onLogout, authFetch }) {
                 <div className="flex flex-col gap-3">
                   <select
                     value={newExercise.exerciseId}
-                    onChange={(e) => setNewExercise({ ...newExercise, exerciseId: e.target.value })}
+                    onChange={(e) =>
+                      setNewExercise({
+                        ...newExercise,
+                        exerciseId: e.target.value,
+                      })
+                    }
                     className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-orange-500"
                   >
                     <option value="">Select exercise</option>
                     {allExercises.map((ex) => (
-                      <option key={ex.id} value={ex.id}>{ex.name}</option>
+                      <option key={ex.id} value={ex.id}>
+                        {ex.name}
+                      </option>
                     ))}
                   </select>
                   <div className="flex gap-3">
@@ -335,21 +394,30 @@ function WorkoutList({ token, onLogout, authFetch }) {
                       type="number"
                       placeholder="Sets"
                       value={newExercise.sets}
-                      onChange={(e) => setNewExercise({ ...newExercise, sets: e.target.value })}
+                      onChange={(e) =>
+                        setNewExercise({ ...newExercise, sets: e.target.value })
+                      }
                       className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-orange-500"
                     />
                     <input
                       type="number"
                       placeholder="Reps"
                       value={newExercise.reps}
-                      onChange={(e) => setNewExercise({ ...newExercise, reps: e.target.value })}
+                      onChange={(e) =>
+                        setNewExercise({ ...newExercise, reps: e.target.value })
+                      }
                       className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-orange-500"
                     />
                     <input
                       type="number"
                       placeholder="Weight"
                       value={newExercise.weight}
-                      onChange={(e) => setNewExercise({ ...newExercise, weight: e.target.value })}
+                      onChange={(e) =>
+                        setNewExercise({
+                          ...newExercise,
+                          weight: e.target.value,
+                        })
+                      }
                       className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-orange-500"
                     />
                   </div>
@@ -365,7 +433,9 @@ function WorkoutList({ token, onLogout, authFetch }) {
           ) : (
             !showNewWorkout && (
               <div className="flex items-center justify-center h-64">
-                <p className="text-zinc-600 text-sm">Select a date to view or log a workout</p>
+                <p className="text-zinc-600 text-sm">
+                  Select a date to view or log a workout
+                </p>
               </div>
             )
           )}
@@ -379,7 +449,10 @@ function WorkoutList({ token, onLogout, authFetch }) {
             <h2 className="text-lg font-bold mb-2">Delete Workout?</h2>
             <p className="text-zinc-400 text-sm mb-6">
               Are you sure you want to delete{" "}
-              <span className="text-white font-medium">{workoutToDelete.name}</span>? This cannot be undone.
+              <span className="text-white font-medium">
+                {workoutToDelete.name}
+              </span>
+              ? This cannot be undone.
             </p>
             <div className="flex gap-3">
               <button
@@ -405,7 +478,8 @@ function WorkoutList({ token, onLogout, authFetch }) {
           <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6 w-full max-w-sm">
             <h2 className="text-lg font-bold mb-2">Delete Exercise?</h2>
             <p className="text-zinc-400 text-sm mb-6">
-              Are you sure you want to remove this exercise? This cannot be undone.
+              Are you sure you want to remove this exercise? This cannot be
+              undone.
             </p>
             <div className="flex gap-3">
               <button
