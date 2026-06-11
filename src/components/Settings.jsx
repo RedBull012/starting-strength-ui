@@ -31,6 +31,24 @@ function Settings({ token, onLogout, authFetch }) {
     if (storedUsername) setUsername(storedUsername);
   }, []);
 
+  function handleChangePassword() {
+    if (!currentPassword || !newPassword) return;
+    authFetch(`${API}/auth/change-password`, {
+      method: "PUT",
+      body: JSON.stringify({ currentPassword, newPassword }),
+    })
+      .then((res) => res.text().then((msg) => ({ ok: res.ok, msg })))
+      .then(({ ok, msg }) => {
+        setPasswordMessage(msg);
+        if (ok) {
+          setCurrentPassword("");
+          setNewPassword("");
+        }
+        setTimeout(() => setPasswordMessage(""), 3000);
+      })
+      .catch(() => {});
+  }
+
   function handleAddExercise() {
     if (!newExerciseName.trim()) return;
     authFetch(`${API}/api/exercises`, {
@@ -152,7 +170,7 @@ function Settings({ token, onLogout, authFetch }) {
               className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-orange-500"
             />
             <button
-              onClick={() => setPasswordMessage("Coming soon — needs backend support")}
+              onClick={handleChangePassword}
               className="w-full bg-orange-500 hover:bg-orange-600 text-white text-sm font-medium py-2 rounded-lg transition-colors"
             >
               Update Password

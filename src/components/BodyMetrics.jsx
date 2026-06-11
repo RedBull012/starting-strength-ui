@@ -41,7 +41,8 @@ function BodyMetrics({ authFetch }) {
     })
       .then((res) => res.json())
       .then((created) => {
-        setMetrics([created, ...metrics]);
+        const updated = [created, ...metrics].sort((a, b) => new Date(b.recordedAt) - new Date(a.recordedAt));
+        setMetrics(updated);
         setWeight("");
         setHeightFeet("");
         setHeightInches("");

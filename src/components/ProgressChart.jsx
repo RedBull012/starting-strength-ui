@@ -9,20 +9,21 @@ import {
   ResponsiveContainer,
 } from "recharts";
 
-function ProgressChart({ allExercises, token }) {
+function ProgressChart({ allExercises, token, authFetch }) {
   const [selectedExerciseId, setSelectedExerciseId] = useState("");
   const [progressData, setProgressData] = useState([]);
 
   useEffect(() => {
     if (!selectedExerciseId) return;
-    fetch(
+    authFetch(
       `${import.meta.env.VITE_API_URL}/api/workouts/exercises/${selectedExerciseId}/progress`,
-      {
-        headers: { Authorization: `Bearer ${token}` },
-      },
     )
       .then((res) => res.json())
-      .then((data) => setProgressData(data));
+      .then((data) => {
+        const sorted = [...data].sort((a, b) => new Date(a.date) - new Date(b.date));
+        setProgressData(sorted);
+      })
+      .catch(() => {});
   }, [selectedExerciseId]);
 
   return (
