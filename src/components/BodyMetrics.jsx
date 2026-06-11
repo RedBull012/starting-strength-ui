@@ -66,7 +66,7 @@ function BodyMetrics({ authFetch }) {
     .map((m) => ({ date: m.recordedAt, weight: m.weight }));
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-white">
+    <div className="min-h-screen bg-zinc-950 text-white overflow-x-hidden">
       <div className="border-b border-zinc-800 px-4 py-4">
         <h1 className="text-lg font-bold">Body Metrics</h1>
       </div>
@@ -96,35 +96,35 @@ function BodyMetrics({ authFetch }) {
           </h2>
           {message && <p className="text-orange-400 text-sm mb-3">{message}</p>}
           <div className="flex flex-col gap-3">
-            <div className="flex gap-2">
+            <div className="grid grid-cols-2 gap-2">
               <input
                 type="number"
                 placeholder="Weight (lbs)"
                 value={weight}
                 onChange={(e) => setWeight(e.target.value)}
-                className="flex-1 bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-orange-500"
+                className="bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-orange-500 w-full"
               />
               <input
                 type="date"
                 value={date}
                 onChange={(e) => setDate(e.target.value)}
-                className="bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-orange-500"
+                className="bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-orange-500 w-full"
               />
             </div>
-            <div className="flex gap-2">
+            <div className="grid grid-cols-2 gap-2">
               <input
                 type="number"
                 placeholder={`Height ft${latest?.heightFeet != null ? ` (${latest.heightFeet})` : ""}`}
                 value={heightFeet}
                 onChange={(e) => setHeightFeet(e.target.value)}
-                className="flex-1 bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-orange-500"
+                className="bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-orange-500 w-full"
               />
               <input
                 type="number"
                 placeholder={`in${latest?.heightInches != null ? ` (${latest.heightInches})` : ""}`}
                 value={heightInches}
                 onChange={(e) => setHeightInches(e.target.value)}
-                className="flex-1 bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-orange-500"
+                className="bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-orange-500 w-full"
               />
             </div>
             <p className="text-xs text-zinc-600">Height is optional — leave blank to keep last entry.</p>
