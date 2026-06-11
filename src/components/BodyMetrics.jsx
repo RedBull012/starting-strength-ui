@@ -9,7 +9,7 @@ import {
   CartesianGrid,
 } from "recharts";
 
-function BodyMetrics({ authFetch }) {
+function BodyMetrics({ authFetch, onLogout }) {
   const [metrics, setMetrics] = useState([]);
   const [weight, setWeight] = useState("");
   const [heightFeet, setHeightFeet] = useState("");
@@ -66,9 +66,17 @@ function BodyMetrics({ authFetch }) {
     .map((m) => ({ date: m.recordedAt, weight: m.weight }));
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-white overflow-x-hidden">
-      <div className="border-b border-zinc-800 px-4 py-4">
+    <div className="min-h-screen bg-zinc-950 text-white relative overflow-x-hidden">
+      <div className="pointer-events-none fixed top-0 right-0 w-96 h-96 rounded-full" style={{background: "radial-gradient(circle, rgba(249,115,22,0.12) 0%, transparent 70%)", transform: "translate(30%, -30%)"}} />
+      <div className="pointer-events-none fixed bottom-0 left-0 w-72 h-72 rounded-full" style={{background: "radial-gradient(circle, rgba(249,115,22,0.08) 0%, transparent 70%)", transform: "translate(-30%, 30%)"}} />
+      <div className="border-b border-zinc-800 px-4 py-4 flex items-center justify-between">
         <h1 className="text-lg font-bold">Body Metrics</h1>
+        <button
+          onClick={onLogout}
+          className="bg-zinc-800 hover:bg-zinc-700 text-white text-sm font-medium px-3 py-2 rounded-lg transition-colors"
+        >
+          Logout
+        </button>
       </div>
 
       <div className="max-w-lg mx-auto px-4 py-6 flex flex-col gap-6">
@@ -102,13 +110,13 @@ function BodyMetrics({ authFetch }) {
                 placeholder="Weight (lbs)"
                 value={weight}
                 onChange={(e) => setWeight(e.target.value)}
-                className="bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-orange-500 w-full"
+                className="min-w-0 bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-orange-500 w-full"
               />
               <input
                 type="date"
                 value={date}
                 onChange={(e) => setDate(e.target.value)}
-                className="bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-orange-500 w-full"
+                className="min-w-0 bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-orange-500 w-full"
               />
             </div>
             <div className="grid grid-cols-2 gap-2">

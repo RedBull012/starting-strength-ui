@@ -11,6 +11,8 @@ function Settings({ token, onLogout, authFetch }) {
 
   // Template state
   const [templates, setTemplates] = useState([]);
+  const [exportStart, setExportStart] = useState("");
+  const [exportEnd, setExportEnd] = useState("");
   const [templateName, setTemplateName] = useState("");
   const [templateRows, setTemplateRows] = useState([{ exerciseId: "", sets: "3", reps: "5" }]);
   const [templateMessage, setTemplateMessage] = useState("");
@@ -30,6 +32,21 @@ function Settings({ token, onLogout, authFetch }) {
     const storedUsername = localStorage.getItem("username");
     if (storedUsername) setUsername(storedUsername);
   }, []);
+
+  function handleExport() {
+    if (!exportStart || !exportEnd) return;
+    authFetch(`${API}/api/workouts/export?startDate=${exportStart}&endDate=${exportEnd}`)
+      .then((res) => res.blob())
+      .then((blob) => {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `workouts_${exportStart}_to_${exportEnd}.csv`;
+        a.click();
+        URL.revokeObjectURL(url);
+      })
+      .catch(() => {});
+  }
 
   function handleChangePassword() {
     if (!currentPassword || !newPassword) return;
@@ -121,7 +138,9 @@ function Settings({ token, onLogout, authFetch }) {
   }
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-white">
+    <div className="min-h-screen bg-zinc-950 text-white relative overflow-x-hidden">
+      <div className="pointer-events-none fixed top-0 right-0 w-96 h-96 rounded-full" style={{background: "radial-gradient(circle, rgba(249,115,22,0.12) 0%, transparent 70%)", transform: "translate(30%, -30%)"}} />
+      <div className="pointer-events-none fixed bottom-0 left-0 w-72 h-72 rounded-full" style={{background: "radial-gradient(circle, rgba(249,115,22,0.08) 0%, transparent 70%)", transform: "translate(-30%, 30%)"}} />
       <div className="border-b border-zinc-800 px-4 py-4">
         <h1 className="text-lg font-bold">Settings</h1>
       </div>
@@ -174,6 +193,42 @@ function Settings({ token, onLogout, authFetch }) {
               className="w-full bg-orange-500 hover:bg-orange-600 text-white text-sm font-medium py-2 rounded-lg transition-colors"
             >
               Update Password
+            </button>
+          </div>
+        </div>
+
+        {/* Export */}
+        <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-5">
+          <h2 className="text-sm font-semibold text-zinc-400 uppercase tracking-wider mb-4">
+            Export Workouts
+          </h2>
+          <div className="flex flex-col gap-3">
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <p className="text-xs text-zinc-500 mb-1">Start date</p>
+                <input
+                  type="date"
+                  value={exportStart}
+                  onChange={(e) => setExportStart(e.target.value)}
+                  className="w-full min-w-0 bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-orange-500"
+                />
+              </div>
+              <div>
+                <p className="text-xs text-zinc-500 mb-1">End date</p>
+                <input
+                  type="date"
+                  value={exportEnd}
+                  onChange={(e) => setExportEnd(e.target.value)}
+                  className="w-full min-w-0 bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-orange-500"
+                />
+              </div>
+            </div>
+            <button
+              onClick={handleExport}
+              disabled={!exportStart || !exportEnd}
+              className="w-full bg-orange-500 hover:bg-orange-600 disabled:opacity-40 disabled:cursor-not-allowed text-white text-sm font-medium py-2 rounded-lg transition-colors"
+            >
+              Download CSV
             </button>
           </div>
         </div>

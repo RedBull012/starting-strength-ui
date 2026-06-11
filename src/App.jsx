@@ -82,11 +82,11 @@ function App() {
         />
         <Route
           path="/progress"
-          element={<ProgressChart allExercises={allExercises} token={token} authFetch={authFetch} />}
+          element={<ProgressChart allExercises={allExercises} token={token} authFetch={authFetch} onLogout={handleLogout} />}
         />
         <Route
           path="/metrics"
-          element={<BodyMetrics authFetch={authFetch} />}
+          element={<BodyMetrics authFetch={authFetch} onLogout={handleLogout} />}
         />
         <Route
           path="/settings"

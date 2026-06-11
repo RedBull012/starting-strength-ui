@@ -42,8 +42,10 @@ function WorkoutList({ token, onLogout, authFetch }) {
     sets: "3",
     reps: "5",
     weight: "",
+    notes: "",
   });
   const [lastSession, setLastSession] = useState(null);
+  const [lastSessionMap, setLastSessionMap] = useState({});
   const [templates, setTemplates] = useState([]);
   const [showTemplateMenu, setShowTemplateMenu] = useState(false);
   const [editingExercise, setEditingExercise] = useState(null); // { id, sets, reps, weight }
@@ -148,13 +150,14 @@ function WorkoutList({ token, onLogout, authFetch }) {
           sets: parseInt(newExercise.sets),
           reps: parseInt(newExercise.reps),
           weight: parseFloat(newExercise.weight),
+          notes: newExercise.notes || null,
         }),
       },
     )
       .then((res) => res.json())
       .then((created) => {
         setExercises([...exercises, created]);
-        setNewExercise({ exerciseId: "", sets: "3", reps: "5", weight: "" });
+        setNewExercise({ exerciseId: "", sets: "3", reps: "5", weight: "", notes: "" });
         setLastSession(null);
       })
       .catch(() => {});
@@ -187,6 +190,18 @@ function WorkoutList({ token, onLogout, authFetch }) {
       .then((created) => {
         setExercises([...exercises, ...created]);
         setShowTemplateMenu(false);
+        // Fetch last session for each template exercise that has no weight
+        const noWeight = created.filter((e) => e.weight == null);
+        noWeight.forEach((e) => {
+          authFetch(`${import.meta.env.VITE_API_URL}/api/workouts/exercises/${e.exerciseId}/last`)
+            .then((res) => res.status === 204 ? null : res.json())
+            .then((data) => {
+              if (data) {
+                setLastSessionMap((prev) => ({ ...prev, [e.exerciseId]: data }));
+              }
+            })
+            .catch(() => {});
+        });
       })
       .catch(() => {});
   }
@@ -200,6 +215,7 @@ function WorkoutList({ token, onLogout, authFetch }) {
           sets: parseInt(editingExercise.sets),
           reps: parseInt(editingExercise.reps),
           weight: parseFloat(editingExercise.weight),
+          notes: editingExercise.notes || null,
         }),
       }
     )
@@ -233,7 +249,9 @@ function WorkoutList({ token, onLogout, authFetch }) {
   );
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-white">
+    <div className="min-h-screen bg-zinc-950 text-white relative overflow-x-hidden">
+      <div className="pointer-events-none fixed top-0 right-0 w-96 h-96 rounded-full" style={{background: "radial-gradient(circle, rgba(249,115,22,0.12) 0%, transparent 70%)", transform: "translate(30%, -30%)"}} />
+      <div className="pointer-events-none fixed bottom-0 left-0 w-72 h-72 rounded-full" style={{background: "radial-gradient(circle, rgba(249,115,22,0.08) 0%, transparent 70%)", transform: "translate(-30%, 30%)"}} />
       {/* Header */}
       <div className="border-b border-zinc-800 px-4 py-4 flex items-center justify-between">
         <h1 className="text-lg font-bold tracking-tight">Starting Strength</h1>
@@ -445,6 +463,18 @@ function WorkoutList({ token, onLogout, authFetch }) {
                             autoFocus
                           />
                         </div>
+                        <input
+                          type="text"
+                          value={editingExercise.notes}
+                          onChange={(e) => setEditingExercise({ ...editingExercise, notes: e.target.value })}
+                          placeholder="Notes (optional)"
+                          className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-orange-500 mb-3"
+                        />
+                        {!editingExercise.weight && lastSessionMap[exercise.exerciseId] && (
+                          <p className="text-xs text-zinc-500 mb-3">
+                            Last session ({lastSessionMap[exercise.exerciseId].date}): {lastSessionMap[exercise.exerciseId].sets} × {lastSessionMap[exercise.exerciseId].reps} @ {lastSessionMap[exercise.exerciseId].weight} lbs
+                          </p>
+                        )}
                         <div className="flex gap-2">
                           <button
                             onClick={handleSaveEdit}
@@ -465,7 +495,17 @@ function WorkoutList({ token, onLogout, authFetch }) {
                         key={exercise.id}
                         className="bg-zinc-900 border border-zinc-800 rounded-xl px-5 py-4 flex items-center justify-between"
                       >
-                        <p className="font-semibold">{exercise.exerciseName}</p>
+                        <div>
+                          <p className="font-semibold">{exercise.exerciseName}</p>
+                          {exercise.notes && (
+                            <p className="text-xs text-zinc-500 mt-0.5">{exercise.notes}</p>
+                          )}
+                          {exercise.weight == null && lastSessionMap[exercise.exerciseId] && (
+                            <p className="text-xs text-zinc-500 mt-0.5">
+                              Last: {lastSessionMap[exercise.exerciseId].sets} × {lastSessionMap[exercise.exerciseId].reps} @ {lastSessionMap[exercise.exerciseId].weight} lbs
+                            </p>
+                          )}
+                        </div>
                         <div className="flex items-center gap-3">
                           <div className="text-right">
                             <p className="text-zinc-400 text-sm">
@@ -478,7 +518,15 @@ function WorkoutList({ token, onLogout, authFetch }) {
                             )}
                           </div>
                           <button
-                            onClick={() => setEditingExercise({ id: exercise.id, sets: exercise.sets, reps: exercise.reps, weight: exercise.weight ?? "" })}
+                            onClick={() => {
+                              setEditingExercise({ id: exercise.id, sets: exercise.sets, reps: exercise.reps, weight: exercise.weight ?? "", notes: exercise.notes ?? "" });
+                              if (exercise.weight == null && !lastSessionMap[exercise.exerciseId]) {
+                                authFetch(`${import.meta.env.VITE_API_URL}/api/workouts/exercises/${exercise.exerciseId}/last`)
+                                  .then((res) => res.status === 204 ? null : res.json())
+                                  .then((data) => { if (data) setLastSessionMap((prev) => ({ ...prev, [exercise.exerciseId]: data })); })
+                                  .catch(() => {});
+                              }
+                            }}
                             className="text-zinc-500 hover:text-orange-400 text-xs transition-colors p-1"
                           >
                             ✎
@@ -560,6 +608,15 @@ function WorkoutList({ token, onLogout, authFetch }) {
                       className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-orange-500"
                     />
                   </div>
+                  <input
+                    type="text"
+                    placeholder="Notes (optional)"
+                    value={newExercise.notes}
+                    onChange={(e) =>
+                      setNewExercise({ ...newExercise, notes: e.target.value })
+                    }
+                    className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-orange-500"
+                  />
                   <button
                     onClick={handleAddExercise}
                     className="w-full bg-orange-500 hover:bg-orange-600 text-white text-sm font-medium py-2 rounded-lg transition-colors"
