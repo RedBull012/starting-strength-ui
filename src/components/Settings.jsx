@@ -14,7 +14,9 @@ function Settings({ token, onLogout, authFetch }) {
   const [exportStart, setExportStart] = useState("");
   const [exportEnd, setExportEnd] = useState("");
   const [templateName, setTemplateName] = useState("");
-  const [templateRows, setTemplateRows] = useState([{ exerciseId: "", sets: "3", reps: "5" }]);
+  const [templateRows, setTemplateRows] = useState([
+    { exerciseId: "", sets: "3", reps: "5" },
+  ]);
   const [templateMessage, setTemplateMessage] = useState("");
 
   const API = import.meta.env.VITE_API_URL;
@@ -35,7 +37,9 @@ function Settings({ token, onLogout, authFetch }) {
 
   function handleExport() {
     if (!exportStart || !exportEnd) return;
-    authFetch(`${API}/api/workouts/export?startDate=${exportStart}&endDate=${exportEnd}`)
+    authFetch(
+      `${API}/api/workouts/export?startDate=${exportStart}&endDate=${exportEnd}`,
+    )
       .then((res) => res.blob())
       .then((blob) => {
         const url = URL.createObjectURL(blob);
@@ -88,7 +92,10 @@ function Settings({ token, onLogout, authFetch }) {
   }
 
   function addTemplateRow() {
-    setTemplateRows([...templateRows, { exerciseId: "", sets: "3", reps: "5" }]);
+    setTemplateRows([
+      ...templateRows,
+      { exerciseId: "", sets: "3", reps: "5" },
+    ]);
   }
 
   function removeTemplateRow(index) {
@@ -97,7 +104,7 @@ function Settings({ token, onLogout, authFetch }) {
 
   function updateTemplateRow(index, field, value) {
     const updated = templateRows.map((row, i) =>
-      i === index ? { ...row, [field]: value } : row
+      i === index ? { ...row, [field]: value } : row,
     );
     setTemplateRows(updated);
   }
@@ -139,8 +146,22 @@ function Settings({ token, onLogout, authFetch }) {
 
   return (
     <div className="min-h-screen bg-zinc-950 text-white relative overflow-x-hidden">
-      <div className="pointer-events-none fixed top-0 right-0 w-96 h-96 rounded-full" style={{background: "radial-gradient(circle, rgba(249,115,22,0.12) 0%, transparent 70%)", transform: "translate(30%, -30%)"}} />
-      <div className="pointer-events-none fixed bottom-0 left-0 w-72 h-72 rounded-full" style={{background: "radial-gradient(circle, rgba(249,115,22,0.08) 0%, transparent 70%)", transform: "translate(-30%, 30%)"}} />
+      <div
+        className="pointer-events-none fixed top-0 right-0 w-96 h-96 rounded-full"
+        style={{
+          background:
+            "radial-gradient(circle, rgba(249,115,22,0.12) 0%, transparent 70%)",
+          transform: "translate(30%, -30%)",
+        }}
+      />
+      <div
+        className="pointer-events-none fixed bottom-0 left-0 w-72 h-72 rounded-full"
+        style={{
+          background:
+            "radial-gradient(circle, rgba(249,115,22,0.08) 0%, transparent 70%)",
+          transform: "translate(-30%, 30%)",
+        }}
+      />
       <div className="border-b border-zinc-800 px-4 py-4">
         <h1 className="text-lg font-bold">Settings</h1>
       </div>
@@ -257,7 +278,9 @@ function Settings({ token, onLogout, authFetch }) {
                     </button>
                   </div>
                   <p className="text-xs text-zinc-500">
-                    {t.exercises.map((e) => `${e.exerciseName} ${e.sets}×${e.reps}`).join(" · ")}
+                    {t.exercises
+                      .map((e) => `${e.exerciseName} ${e.sets}×${e.reps}`)
+                      .join(" · ")}
                   </p>
                 </div>
               ))}
@@ -277,12 +300,16 @@ function Settings({ token, onLogout, authFetch }) {
               <div key={i} className="flex gap-2 items-center">
                 <select
                   value={row.exerciseId}
-                  onChange={(e) => updateTemplateRow(i, "exerciseId", e.target.value)}
+                  onChange={(e) =>
+                    updateTemplateRow(i, "exerciseId", e.target.value)
+                  }
                   className="flex-1 bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-orange-500"
                 >
                   <option value="">Exercise</option>
                   {exercises.map((ex) => (
-                    <option key={ex.id} value={ex.id}>{ex.name}</option>
+                    <option key={ex.id} value={ex.id}>
+                      {ex.name}
+                    </option>
                   ))}
                 </select>
                 <input
